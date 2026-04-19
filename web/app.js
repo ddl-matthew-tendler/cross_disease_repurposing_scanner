@@ -275,7 +275,7 @@ function RadarChart(props) {
       credits: { enabled: false },
       legend: { enabled: false },
       xAxis: {
-        categories: ['Bio. Plaus.', 'Unmet Need', 'Whitespace', 'Feasibility', 'Commercial'],
+        categories: ['Bio. plausibility', 'Unmet need', 'Whitespace', 'Feasibility', 'Commercial'],
         tickmarkPlacement: 'on', lineWidth: 0,
         labels: { style: { fontSize: '9px', color: '#65657B' } },
       },
@@ -442,9 +442,9 @@ function CompoundList(props) {
 /* ── WeightSliders ────────────────────────────────────────── */
 function WeightSliders(props) {
   var weights = props.weights, onChange = props.onChange;
-  var LABELS = ['Bio. Plaus.', 'Unmet Need', 'Whitespace', 'Feasibility', 'Commercial'];
+  var LABELS = ['Bio. plausibility', 'Unmet need', 'Comp. whitespace', 'Translational', 'Commercial'];
   return h('div', { className: 'weights-panel' },
-    h('div', { className: 'weights-title' }, 'Ranking Weights (drag to re-rank)'),
+    h('div', { className: 'weights-title' }, 'Scoring weights'),
     h('div', { className: 'weights-grid' },
       AXIS_KEYS.map(function(k, i) {
         return h('div', { key: k, className: 'weight-item' },
@@ -511,7 +511,7 @@ function IndicationTable(props) {
       } },
     { title: '', key: 'action', width: 54,
       render: function(_, rec) {
-        return h(Button, { size: 'small', type: 'primary', ghost: true,
+        return h(Button, { size: 'small', type: 'link',
                            onClick: function(e) { e.stopPropagation(); onSelect(rec); } }, 'View');
       } },
   ];
@@ -550,7 +550,7 @@ function DecisionModal(props) {
   }
 
   return h(Modal, {
-    title: 'Record Committee Decision',
+    title: 'Record committee decision',
     open: visible,
     onCancel: onClose,
     width: 480,
@@ -564,7 +564,7 @@ function DecisionModal(props) {
       h('div', { style: { fontSize: 14, fontWeight: 600, marginTop: 2 } }, indication.name)
     ),
     h('div', { style: { marginBottom: 12 } },
-      h('div', { style: { fontSize: 11, fontWeight: 600, color: '#65657B', marginBottom: 6 } }, 'DECISION'),
+      h('div', { style: { fontSize: 12, fontWeight: 600, color: '#2E2E38', marginBottom: 6 } }, 'Decision'),
       h(Radio.Group, { value: decVal, onChange: function(e) { setDecVal(e.target.value); } },
         h(Radio, { value: 'advance', style: { color: '#28A464' } }, '▲ Advance to next step'),
         h(Radio, { value: 'watch',   style: { color: '#CCB718', marginLeft: 8 } }, '◎ Watch / Monitor'),
@@ -572,12 +572,12 @@ function DecisionModal(props) {
       )
     ),
     h('div', { style: { marginBottom: 12 } },
-      h('div', { style: { fontSize: 11, fontWeight: 600, color: '#65657B', marginBottom: 4 } }, 'RATIONALE'),
+      h('div', { style: { fontSize: 12, fontWeight: 600, color: '#2E2E38', marginBottom: 4 } }, 'Rationale'),
       h(Input.TextArea, { rows: 3, value: rationale, onChange: function(e) { setRationale(e.target.value); },
                           placeholder: 'Summarise the committee\'s reasoning for this decision…' })
     ),
     h('div', {},
-      h('div', { style: { fontSize: 11, fontWeight: 600, color: '#65657B', marginBottom: 4 } }, 'DECIDED BY'),
+      h('div', { style: { fontSize: 12, fontWeight: 600, color: '#2E2E38', marginBottom: 4 } }, 'Decided by'),
       h(Input, { value: decidedBy, onChange: function(e) { setDecidedBy(e.target.value); },
                  placeholder: 'Name and role (e.g. Dr. Jane Smith, Head of TM)' })
     )
@@ -618,7 +618,7 @@ function DossierPane(props) {
         ),
         /* composite score summary */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Overall Score & Axes'),
+          h('div', { className: 'dossier-section-title' }, 'Overall score & axes'),
           h(AxisRows, { scores: indication.scores })
         ),
         /* radar chart */
@@ -638,21 +638,21 @@ function DossierPane(props) {
         ),
         /* mechanistic rationale */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Mechanistic Rationale'),
+          h('div', { className: 'dossier-section-title' }, 'Mechanistic rationale'),
           h('div', { className: 'dossier-text' },
             dossier ? dossier.mechanisticRationale : indication.evidenceSummary
           )
         ),
         /* key mechanism */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Key Mechanism'),
+          h('div', { className: 'dossier-section-title' }, 'Key mechanism'),
           h('div', { style: { fontSize: 12, color: '#543FDE', fontWeight: 600, padding: '6px 10px', background: '#F5F1FF', borderRadius: 5 } },
             indication.keyMechanism
           )
         ),
         /* evidence graph */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Evidence Graph'),
+          h('div', { className: 'dossier-section-title' }, 'Evidence graph'),
           h(EvidenceGraph, { graphData: graphData }),
           h('div', { className: 'evidence-graph-legend' },
             [['target','#543FDE','Target'],['pathway','#0070CC','Pathway'],['disease','#FF6543','Disease'],['evidence','#28A464','Evidence']].map(function(item) {
@@ -665,12 +665,12 @@ function DossierPane(props) {
         ),
         /* unmet need */
         dossier && h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Unmet Need Assessment'),
+          h('div', { className: 'dossier-section-title' }, 'Unmet need assessment'),
           h('div', { className: 'dossier-text' }, dossier.unmetNeedNarrative)
         ),
         /* competitive landscape */
         competitive.length > 0 && h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Competitive Landscape'),
+          h('div', { className: 'dossier-section-title' }, 'Competitive landscape'),
           competitive.map(function(c, i) {
             return h('div', { key: i, className: 'competitive-item' },
               h('div', { className: 'competitive-item-phase ' + competitorPhaseCls(c.phase) }, c.phase),
@@ -683,19 +683,19 @@ function DossierPane(props) {
         ),
         /* IP considerations */
         dossier && h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'IP Considerations'),
+          h('div', { className: 'dossier-section-title' }, 'IP considerations'),
           h('div', { className: 'dossier-text' }, dossier.ipConsiderations)
         ),
         /* proposed experiment */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Proposed Next Experiment'),
+          h('div', { className: 'dossier-section-title' }, 'Proposed next experiment'),
           h('div', { className: 'experiment-box' },
             dossier ? dossier.proposedNextExperiment : indication.proposedExperiment
           )
         ),
         /* citations */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Key Citations'),
+          h('div', { className: 'dossier-section-title' }, 'Key citations'),
           (indication.citations || []).map(function(c, i) {
             return h('div', { key: i, className: 'citation-item' },
               h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/' + c.pmid, target: '_blank', rel: 'noreferrer' },
@@ -708,10 +708,9 @@ function DossierPane(props) {
     ),
     /* action footer */
     h('div', { className: 'dossier-actions' },
-      h(Button, { size: 'small', type: 'primary',
-                  onClick: function() { onDecision(); } }, '📋 Record Decision'),
-      h(Button, { size: 'small',
-                  onClick: function() { window.print(); } }, '⬇ Export PDF')
+      h(Button, { type: 'primary',
+                  onClick: function() { onDecision(); } }, 'Record decision'),
+      h(Button, { onClick: function() { window.print(); } }, 'Export PDF')
     )
   );
 }
@@ -780,7 +779,7 @@ function ScannerPage(props) {
     /* Right pane */
     h('div', { className: 'scanner-pane' },
       h('div', { className: 'pane-header' },
-        h('div', { className: 'pane-title' }, selInd ? 'Dossier Preview' : 'Dossier'),
+        h('div', { className: 'pane-title' }, selInd ? 'Dossier preview' : 'Dossier'),
         selInd && h('div', { style: { fontSize: 11, color: '#8F8FA3', marginTop: 2 } }, 'Rank #' + selInd.rank + ' · Score ' + (selInd.composite || 0).toFixed(1))
       ),
       h(DossierPane, {
@@ -897,7 +896,7 @@ function DashboardPage(props) {
   ];
 
   return h('div', { className: 'page-content' },
-    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Portfolio Committee Dashboard'),
+    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Portfolio committee dashboard'),
     h('div', { style: { fontSize: 12, color: '#8F8FA3', marginBottom: 16 } }, 'Top-10 repurposing candidates across all portfolio assets, ranked by weighted composite score'),
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Active Assets', value: stats.active, color: 'success', sub: 'in clinical development' }),
@@ -907,7 +906,7 @@ function DashboardPage(props) {
     ),
     h('div', { className: 'section-card', style: { marginBottom: 16 } },
       h('div', { className: 'section-card-header' },
-        h('div', { className: 'section-card-title' }, 'Top-10 Repurposing Candidates — Composite Score')
+        h('div', { className: 'section-card-title' }, 'Top 10 repurposing candidates — composite score')
       ),
       h('div', { style: { padding: '12px 16px' } },
         h('div', { ref: chartRef })
@@ -915,7 +914,7 @@ function DashboardPage(props) {
     ),
     h('div', { className: 'section-card' },
       h('div', { className: 'section-card-header' },
-        h('div', { className: 'section-card-title' }, 'Top-10 Candidates — Detail')
+        h('div', { className: 'section-card-title' }, 'Top 10 candidates')
       ),
       h(Table, { dataSource: topCandidates, columns: columns, rowKey: function(r) { return r.compound.id + '-' + r.indication.id; },
                  size: 'small', pagination: false, style: { margin: '0 8px 8px' } })
@@ -960,9 +959,9 @@ function DustyShelfPage(props) {
         return h(Tag, { color: 'green' }, n + ' new');
       } },
     { title: '', key: 'action', width: 100, render: function(_, rec) {
-        return h(Button, { size: 'small', type: 'primary', ghost: true,
+        return h(Button, { size: 'small',
                            onClick: function() { message.success(rec.name + ' queued for next quarterly rescan.'); } },
-          '↻ Queue Rescan');
+          'Queue rescan');
       } },
   ];
 
@@ -971,7 +970,7 @@ function DustyShelfPage(props) {
     if (!d) return h('div', { style: { padding: '8px 16px', color: '#8F8FA3' } }, 'No external signal data available for this asset.');
     return h('div', { style: { padding: '8px 24px 16px' } },
       h('div', { style: { fontWeight: 600, marginBottom: 8, fontSize: 13 } }, 'Rescue Hypothesis: ', h('span', { style: { fontWeight: 400, color: '#65657B' } }, d.rescueRationale)),
-      h('div', { style: { fontWeight: 700, fontSize: 11, color: '#8F8FA3', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 } }, 'External Signals Since Shelving'),
+      h('div', { style: { fontWeight: 600, fontSize: 12, color: '#2E2E38', marginBottom: 8 } }, 'External signals since shelving'),
       (d.externalChanges || []).map(function(sig, i) {
         return h('div', { key: i, className: 'signal-card' },
           h('div', { className: 'signal-card-icon' }, sig.icon),
@@ -990,7 +989,7 @@ function DustyShelfPage(props) {
   };
 
   return h('div', { className: 'page-content' },
-    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Dusty Shelf — De-prioritized Assets'),
+    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Dusty shelf — de-prioritized assets'),
     h('div', { style: { fontSize: 12, color: '#8F8FA3', marginBottom: 16 } }, 'Systematically review shelved assets against recent external signals. Assets with high rescue scores warrant re-presentation to the Indication Strategy Committee.'),
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Shelved Assets', value: shelved.length, color: '', sub: 'in portfolio' }),
@@ -999,7 +998,7 @@ function DustyShelfPage(props) {
     ),
     h('div', { className: 'section-card' },
       h('div', { className: 'section-card-header' },
-        h('div', { className: 'section-card-title' }, 'Shelved Asset Rescue Tracker'),
+        h('div', { className: 'section-card-title' }, 'Shelved asset rescue tracker'),
         h('div', { style: { fontSize: 11, color: '#8F8FA3' } }, 'Expand rows to view external change signals')
       ),
       h(Table, {
@@ -1077,12 +1076,12 @@ function AuditPage(props) {
       render: function(v) { return h('span', { style: { fontSize: 12 } }, v); } },
     { title: '', key: 'snap', width: 80, render: function(_, rec) {
         if (!rec.evidenceSnapshot) return null;
-        return h(Button, { size: 'small', onClick: function() { setSnapDec(rec); } }, 'Evidence');
+        return h(Button, { size: 'small', type: 'link', onClick: function() { setSnapDec(rec); } }, 'View evidence');
       } },
   ];
 
   return h('div', { className: 'page-content' },
-    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Decision Audit Trail'),
+    h('div', { style: { fontWeight: 700, fontSize: 18, color: '#2E2E38', marginBottom: 4 } }, 'Decision audit trail'),
     h('div', { style: { fontSize: 12, color: '#8F8FA3', marginBottom: 16 } }, 'Every committee decision, pinned to the evidence snapshot at time of decision. Immutable record for governance.'),
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Total Decisions', value: stats.total, color: 'primary', sub: 'all time' }),
@@ -1092,8 +1091,8 @@ function AuditPage(props) {
     ),
     h('div', { className: 'section-card' },
       h('div', { className: 'section-card-header' },
-        h('div', { className: 'section-card-title' }, 'Committee Decisions (' + decisions.length + ')'),
-        h('div', { style: { fontSize: 11, color: '#8F8FA3' } }, 'Click Evidence to view score snapshot at time of decision')
+        h('div', { className: 'section-card-title' }, 'Committee decisions (' + decisions.length + ')'),
+        h('div', { style: { fontSize: 11, color: '#8F8FA3' } }, "Click 'View evidence' to see scores at time of decision")
       ),
       h(Table, {
         dataSource: filtered, rowKey: 'id', size: 'small',
@@ -1103,7 +1102,7 @@ function AuditPage(props) {
       })
     ),
     h(Modal, {
-      title: 'Evidence Snapshot at Time of Decision',
+      title: 'Evidence snapshot at time of decision',
       open: !!snapDec,
       onCancel: function() { setSnapDec(null); },
       footer: h(Button, { onClick: function() { setSnapDec(null); } }, 'Close'),
@@ -1313,8 +1312,8 @@ function App() {
     }
   }
 
-  var tabHeaders = { scanner: 'Indication Scanner', dashboard: 'Portfolio Dashboard',
-                     shelf: 'Dusty Shelf', audit: 'Decision Audit Trail' };
+  var tabHeaders = { scanner: 'Indication scanner', dashboard: 'Portfolio dashboard',
+                     shelf: 'Dusty shelf', audit: 'Decision audit trail' };
 
   var debugState = {
     activeTab: activeTab, useDummy: useDummy, connected: connected,
