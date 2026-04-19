@@ -1,3 +1,62 @@
+/* ── Debug Store (runs before React mounts) ──────────────── */
+var _debugLogs = [];
+var _debugApiCalls = [];
+var _debugListeners = [];
+var _debugEnabled = (function() {
+  try { return window.location.search.indexOf('debug') !== -1 || localStorage.getItem('repurposing_debug') === '1'; } catch(e) { return false; }
+})();
+
+function _dbPush() { _debugListeners.forEach(function(fn) { try { fn(); } catch(e) {} }); }
+
+(function() {
+  var methods = ['log', 'warn', 'error', 'info'];
+  methods.forEach(function(m) {
+    var orig = console[m].bind(console);
+    console[m] = function() {
+      var args = Array.prototype.slice.call(arguments);
+      var msg = args.map(function(a) {
+        try { return (typeof a === 'object' && a !== null) ? JSON.stringify(a) : String(a); } catch(e) { return String(a); }
+      }).join(' ');
+      _debugLogs.unshift({ id: Date.now() + Math.random(), type: m, msg: msg, ts: new Date().toISOString() });
+      if (_debugLogs.length > 600) _debugLogs.length = 600;
+      _dbPush();
+      orig.apply(console, arguments);
+    };
+  });
+})();
+
+(function() {
+  var origFetch = window.fetch;
+  window.fetch = function(url, opts) {
+    var method = (opts && opts.method) || 'GET';
+    var start = Date.now();
+    var entry = { id: start + Math.random(), method: method, url: String(url), status: null, duration: null, ts: new Date().toISOString(), pending: true };
+    _debugApiCalls.unshift(entry);
+    if (_debugApiCalls.length > 200) _debugApiCalls.length = 200;
+    _dbPush();
+    return origFetch.apply(window, arguments).then(function(resp) {
+      entry.status = resp.status; entry.duration = Date.now() - start; entry.pending = false;
+      _dbPush();
+      return resp;
+    }).catch(function(err) {
+      entry.status = 'ERR'; entry.duration = Date.now() - start; entry.pending = false; entry.error = err.message;
+      _dbPush();
+      throw err;
+    });
+  };
+})();
+
+window.addEventListener('error', function(e) {
+  _debugLogs.unshift({ id: Date.now() + Math.random(), type: 'error', msg: 'Uncaught: ' + e.message + (e.filename ? ' @ ' + e.filename + ':' + e.lineno : ''), ts: new Date().toISOString() });
+  _dbPush();
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+  var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unhandled rejection';
+  _debugLogs.unshift({ id: Date.now() + Math.random(), type: 'error', msg: 'UnhandledPromise: ' + msg, ts: new Date().toISOString() });
+  _dbPush();
+});
+
 /* ── Globals ─────────────────────────────────────────────── */
 var _antd = antd;
 var ConfigProvider = _antd.ConfigProvider, Button = _antd.Button, Input = _antd.Input,
@@ -1062,6 +1121,126 @@ function AuditPage(props) {
   );
 }
 
+/* ── Debug Panel ──────────────────────────────────────────── */
+function DebugPanel(props) {
+  var appState = props.appState;
+  var _open = useState(_debugEnabled); var open = _open[0]; var setOpen = _open[1];
+  var _tab = useState('logs'); var tab = _tab[0]; var setTab = _tab[1];
+  var _tick = useState(0); var setTick = _tick[1];
+
+  useEffect(function() {
+    var fn = function() { setTick(function(t) { return t + 1; }); };
+    _debugListeners.push(fn);
+    return function() {
+      var idx = _debugListeners.indexOf(fn);
+      if (idx !== -1) _debugListeners.splice(idx, 1);
+    };
+  }, []);
+
+  useEffect(function() {
+    function onKey(e) {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        e.preventDefault();
+        setOpen(function(v) { return !v; });
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return function() { window.removeEventListener('keydown', onKey); };
+  }, []);
+
+  function statusColor(s) {
+    if (!s || s === 'ERR') return '#FF6B6B';
+    if (s >= 400) return '#FF6B6B';
+    if (s >= 300) return '#FFD166';
+    return '#6BD66B';
+  }
+
+  var errorCount = _debugLogs.filter(function(l) { return l.type === 'error'; }).length;
+  var warnCount  = _debugLogs.filter(function(l) { return l.type === 'warn'; }).length;
+  var pendingCount = _debugApiCalls.filter(function(c) { return c.pending; }).length;
+
+  return h('div', null,
+    h('button', {
+      className: 'debug-fab',
+      onClick: function() { setOpen(function(v) { return !v; }); },
+      title: 'Debug Panel  (Ctrl+Shift+D)'
+    },
+      '🐛',
+      errorCount > 0 && h('span', { className: 'debug-fab-err' }, errorCount)
+    ),
+
+    open && h('div', { className: 'debug-panel' },
+      h('div', { className: 'debug-panel-header' },
+        h('span', { className: 'debug-panel-title' }, '🐛 Debug'),
+        h('div', { className: 'debug-panel-tabs' },
+          h('button', { className: 'debug-tab' + (tab === 'logs' ? ' active' : ''), onClick: function() { setTab('logs'); } },
+            'Logs' + (errorCount || warnCount ? ' (' + (errorCount ? errorCount + '✕' : '') + (warnCount ? ' ' + warnCount + '⚠' : '').trim() + ')' : '')
+          ),
+          h('button', { className: 'debug-tab' + (tab === 'api' ? ' active' : ''), onClick: function() { setTab('api'); } },
+            'API' + (pendingCount ? ' (' + pendingCount + '…)' : ' (' + _debugApiCalls.length + ')')
+          ),
+          h('button', { className: 'debug-tab' + (tab === 'state' ? ' active' : ''), onClick: function() { setTab('state'); } }, 'State')
+        ),
+        h('div', { className: 'debug-panel-actions' },
+          h('button', { className: 'debug-action-btn', onClick: function() {
+            if (tab === 'logs') _debugLogs.splice(0, _debugLogs.length);
+            else if (tab === 'api') _debugApiCalls.splice(0, _debugApiCalls.length);
+            setTick(function(t) { return t + 1; });
+          }}, 'Clear'),
+          h('button', { className: 'debug-action-btn', onClick: function() {
+            var text = tab === 'logs'  ? JSON.stringify(_debugLogs, null, 2)     :
+                       tab === 'api'   ? JSON.stringify(_debugApiCalls, null, 2) :
+                                         JSON.stringify(appState, null, 2);
+            navigator.clipboard && navigator.clipboard.writeText(text).then(function() {
+              message.success('Copied to clipboard');
+            });
+          }}, 'Copy'),
+          h('button', { className: 'debug-action-btn', onClick: function() {
+            try { localStorage.setItem('repurposing_debug', open ? '0' : '1'); } catch(e) {}
+            setOpen(false);
+          }}, 'Persist'),
+          h('button', { className: 'debug-close-btn', onClick: function() { setOpen(false); } }, '✕')
+        )
+      ),
+
+      h('div', { className: 'debug-panel-body' },
+        tab === 'logs' && h('div', { className: 'debug-log-list' },
+          _debugLogs.length === 0
+            ? h('div', { className: 'debug-empty' }, 'No logs captured yet')
+            : _debugLogs.map(function(entry) {
+                return h('div', { key: entry.id, className: 'debug-log-entry debug-log-' + entry.type },
+                  h('span', { className: 'debug-log-ts' }, entry.ts.slice(11, 19)),
+                  h('span', { className: 'debug-log-level' }, entry.type.toUpperCase()),
+                  h('span', { className: 'debug-log-msg' }, entry.msg)
+                );
+              })
+        ),
+
+        tab === 'api' && h('div', { className: 'debug-log-list' },
+          _debugApiCalls.length === 0
+            ? h('div', { className: 'debug-empty' }, 'No API calls yet')
+            : _debugApiCalls.map(function(call) {
+                return h('div', { key: call.id, className: 'debug-log-entry' },
+                  h('span', { className: 'debug-log-ts' }, call.ts.slice(11, 19)),
+                  h('span', { className: 'debug-method', style: { color: call.method === 'POST' ? '#FF8C42' : '#6BB5FF' } }, call.method),
+                  h('span', { className: 'debug-log-msg' }, call.url),
+                  call.pending
+                    ? h('span', { className: 'debug-status pending' }, '…')
+                    : h('span', { className: 'debug-status', style: { color: statusColor(call.status) } },
+                        call.status + (call.duration != null ? '  ' + call.duration + 'ms' : '')
+                      )
+                );
+              })
+        ),
+
+        tab === 'state' && h('div', { className: 'debug-state' },
+          h('pre', { className: 'debug-state-pre' }, JSON.stringify(appState, null, 2))
+        )
+      )
+    )
+  );
+}
+
 /* ── Sidebar ──────────────────────────────────────────────── */
 function Sidebar(props) {
   var activeTab = props.activeTab, onTabChange = props.onTabChange;
@@ -1137,8 +1316,17 @@ function App() {
   var tabHeaders = { scanner: 'Indication Scanner', dashboard: 'Portfolio Dashboard',
                      shelf: 'Dusty Shelf', audit: 'Decision Audit Trail' };
 
+  var debugState = {
+    activeTab: activeTab, useDummy: useDummy, connected: connected,
+    decisionsCount: decisions.length, weights: weights,
+    mockPortfolioCount: MOCK_PORTFOLIO.length,
+    mockIndicationsCount: MOCK_INDICATIONS.length,
+    mockDossierKeys: Object.keys(MOCK_DOSSIERS || {}),
+  };
+
   return h(ConfigProvider, { theme: dominoTheme },
     h('div', { className: 'app-root' },
+      h(DebugPanel, { appState: debugState }),
       h(Sidebar, { activeTab: activeTab, onTabChange: setActiveTab,
                    useDummy: useDummy, onToggleDummy: handleToggleDummy, connected: connected }),
       h('div', { className: 'app-main' },
