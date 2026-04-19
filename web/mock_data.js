@@ -426,43 +426,43 @@ var MOCK_DUSTY_SHELF = {
     rescueScore: 8.2,
     rescueRationale: 'IDH2 inhibitor enasidenib is approved for AML but IDH1/2 dual inhibition is not — carsenib\'s dual profile remains mechanistically differentiated. Three Phase 2 failures in cholangio (IDH1) and MDS (IDH2) since shelving create new whitespace. Key: cardiac safety mitigation by dose fractionation is feasible per updated Phase 1 PK re-analysis.',
     externalChanges: [
-      { type: 'Competitor Failure', icon: '📉', date: '2025-09', text: 'Ivosidenib + azacitidine Phase 3 in MDS missed OS endpoint (AGILE-MDS) — creates competitive whitespace for dual IDH1/2 approach in IDH-mutant MDS.', impact: 'positive' },
-      { type: 'Regulatory Signal', icon: '📋', date: '2025-11', text: 'FDA Hematology Advisory Committee released draft guidance on QTc monitoring strategy for IDH inhibitors, suggesting dose-fractionation can mitigate QTc risk — directly addresses carsenib\'s shelving reason.', impact: 'positive' },
-      { type: 'New Biomarker', icon: '🔬', date: '2026-01', text: 'ctDNA IDH1/2 co-mutation panel validated as screening tool (sensitivity 94%) — enables patient enrichment without bone marrow biopsy, reducing Phase 2 screen failure rate.', impact: 'positive' },
+      { type: 'Competitor Failure', date: '2025-09', text: 'Ivosidenib + azacitidine Phase 3 in MDS missed OS endpoint (AGILE-MDS) — creates competitive whitespace for dual IDH1/2 approach in IDH-mutant MDS.', impact: 'positive' },
+      { type: 'Regulatory Signal', date: '2025-11', text: 'FDA Hematology Advisory Committee released draft guidance on QTc monitoring strategy for IDH inhibitors, suggesting dose-fractionation can mitigate QTc risk — directly addresses carsenib\'s shelving reason.', impact: 'positive' },
+      { type: 'New Biomarker', date: '2026-01', text: 'ctDNA IDH1/2 co-mutation panel validated as screening tool (sensitivity 94%) — enables patient enrichment without bone marrow biopsy, reducing Phase 2 screen failure rate.', impact: 'positive' },
     ],
   },
   'cmp-1178': {
     rescueScore: 6.4,
     rescueRationale: 'CD73/adenosine axis rescue story is strengthened by three new biomarker-selected trials. High-CD73 solid tumors (colorectal, bladder, breast) represent a viable niche if combined with a new IO partner. Commercial path: small biotech licensing for combination development.',
     externalChanges: [
-      { type: 'New Biomarker', icon: '🔬', date: '2025-08', text: 'CD73-high IHC scoring system validated and standardised across 4 pathology labs — enables biomarker-stratified enrolment for a rescue Phase 2.', impact: 'positive' },
-      { type: 'Competitor Failure', icon: '📉', date: '2025-12', text: 'AstraZeneca anti-CD73 oleclumab Phase 2/3 did not meet OS in NSCLC — but biomarker-unselected design blamed; creates opening for biomarker-selected trial.', impact: 'positive' },
-      { type: 'Scientific Publication', icon: '📄', date: '2026-02', text: 'Nature paper: CD73-high pancreatic cancer responds to adenosine receptor antagonist combination — novatumab\'s mechanism could be repositioned as a combination partner in PDAC CD73-high subpopulation.', impact: 'positive' },
+      { type: 'New Biomarker', date: '2025-08', text: 'CD73-high IHC scoring system validated and standardised across 4 pathology labs — enables biomarker-stratified enrolment for a rescue Phase 2.', impact: 'positive' },
+      { type: 'Competitor Failure', date: '2025-12', text: 'AstraZeneca anti-CD73 oleclumab Phase 2/3 did not meet OS in NSCLC — but biomarker-unselected design blamed; creates opening for biomarker-selected trial.', impact: 'positive' },
+      { type: 'Scientific Publication', date: '2026-02', text: 'Nature paper: CD73-high pancreatic cancer responds to adenosine receptor antagonist combination — novatumab\'s mechanism could be repositioned as a combination partner in PDAC CD73-high subpopulation.', impact: 'positive' },
     ],
   },
   'cmp-1234': {
     rescueScore: 4.1,
     rescueRationale: 'MEK inhibitor competitive landscape has not materially improved since de-prioritization. Cobimetinib, trametinib, binimetinib all approved; cardiac toxicity remains a class concern. Only viable path is a new indication with no BRAF comutation requirement — limited candidates identified.',
     externalChanges: [
-      { type: 'Regulatory Signal', icon: '📋', date: '2025-07', text: 'FDA issued class safety communication for MEK inhibitors on cardiac monitoring — increases regulatory burden for a new MEK program.', impact: 'negative' },
-      { type: 'Scientific Publication', icon: '📄', date: '2026-01', text: 'MEK inhibitor combination with CDK4/6 inhibitors shows synergy in KRAS-mutant pancreatic cancer cell lines — potential combination rescue strategy if PDAC fosarginib data is negative.', impact: 'positive' },
+      { type: 'Regulatory Signal', date: '2025-07', text: 'FDA issued class safety communication for MEK inhibitors on cardiac monitoring — increases regulatory burden for a new MEK program.', impact: 'negative' },
+      { type: 'Scientific Publication', date: '2026-01', text: 'MEK inhibitor combination with CDK4/6 inhibitors shows synergy in KRAS-mutant pancreatic cancer cell lines — potential combination rescue strategy if PDAC fosarginib data is negative.', impact: 'positive' },
     ],
   },
   'cmp-1356': {
     rescueScore: 7.1,
     rescueRationale: 'CSF1R biology has pivoted from TAM depletion toward microglial diseases (Alzheimer\'s, ALS). Two Phase 2 trials in microglial diseases launched 2024-2025. Solectinib\'s CNS penetration was never characterized — if favourable, this is a genuine rescue hypothesis in neuroinflammatory diseases.',
     externalChanges: [
-      { type: 'New Indication Signal', icon: '✨', date: '2025-06', text: 'AbbVie Phase 2 CSF1Ri in Alzheimer\'s (AD-TAC study) shows microglial activation suppression and slowing of cognitive decline at 18 months — validates CSF1R as Alzheimer\'s target.', impact: 'positive' },
-      { type: 'Scientific Publication', icon: '📄', date: '2025-10', text: 'Nat Neurosci: CSF1R-high microglia drive neuroinflammation in ALS spinal cord; CSF1R knockout in SOD1 mice extends survival by 28%. Solectinib\'s mechanism is directly relevant.', impact: 'positive' },
-      { type: 'Regulatory Signal', icon: '📋', date: '2026-03', text: 'FDA Neurology Division issued draft guidance on CSF1R inhibitor CNS development — clarifies BBB penetration requirements and acceptable surrogate endpoints (CSF neurofilament).', impact: 'positive' },
+      { type: 'New Indication Signal', date: '2025-06', text: 'AbbVie Phase 2 CSF1Ri in Alzheimer\'s (AD-TAC study) shows microglial activation suppression and slowing of cognitive decline at 18 months — validates CSF1R as Alzheimer\'s target.', impact: 'positive' },
+      { type: 'Scientific Publication', date: '2025-10', text: 'Nat Neurosci: CSF1R-high microglia drive neuroinflammation in ALS spinal cord; CSF1R knockout in SOD1 mice extends survival by 28%. Solectinib\'s mechanism is directly relevant.', impact: 'positive' },
+      { type: 'Regulatory Signal', date: '2026-03', text: 'FDA Neurology Division issued draft guidance on CSF1R inhibitor CNS development — clarifies BBB penetration requirements and acceptable surrogate endpoints (CSF neurofilament).', impact: 'positive' },
     ],
   },
   'cmp-1489': {
     rescueScore: 5.3,
     rescueRationale: 'HDAC1/2 class I selectivity remains a mechanistic differentiator. Two new indications have emerged: (1) HDAC1/2 inhibition in solid-organ GvHD (small market, orphan), and (2) combination with PD-1 antibodies in SSc (very early signal). GI toxicity must be re-addressed with modified release formulation.',
     externalChanges: [
-      { type: 'New Indication Signal', icon: '✨', date: '2025-09', text: 'Phase 2 signal: romidepsin (HDAC1/2) in steroid-refractory chronic GvHD shows ORR 48% — creates rationale for ravitaxel class I HDAC inhibitor rescue in GvHD with improved tolerability.', impact: 'positive' },
-      { type: 'Scientific Publication', icon: '📄', date: '2026-02', text: 'HDAC1/2 inhibition reprogrammes fibroblast epigenome in SSc skin: class I HDAC inhibitor reduces ACTA2 and COL1A1 by 60% in patient-derived fibroblasts. New indication hypothesis.', impact: 'positive' },
+      { type: 'New Indication Signal', date: '2025-09', text: 'Phase 2 signal: romidepsin (HDAC1/2) in steroid-refractory chronic GvHD shows ORR 48% — creates rationale for ravitaxel class I HDAC inhibitor rescue in GvHD with improved tolerability.', impact: 'positive' },
+      { type: 'Scientific Publication', date: '2026-02', text: 'HDAC1/2 inhibition reprogrammes fibroblast epigenome in SSc skin: class I HDAC inhibitor reduces ACTA2 and COL1A1 by 60% in patient-derived fibroblasts. New indication hypothesis.', impact: 'positive' },
     ],
   },
 };

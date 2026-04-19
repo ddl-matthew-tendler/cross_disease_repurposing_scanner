@@ -75,27 +75,6 @@ body {
   border-right: 3px solid #543FDE;
 }
 
-.sidebar-nav-icon {
-  font-size: 16px;
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.sidebar-footer {
-  padding: 12px 20px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sidebar-footer-label {
-  color: rgba(255,255,255,0.45);
-  font-size: 11px;
-  font-weight: 500;
-}
-
 /* ── Main Content ─────────────────────────────────────────── */
 .app-main {
   flex: 1;
@@ -666,8 +645,9 @@ body {
   align-items: flex-start;
 }
 
-.signal-card-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 .signal-card-content { flex: 1; min-width: 0; }
+.signal-card-positive { border-left: 3px solid #28A464; }
+.signal-card-negative { border-left: 3px solid #C20A29; }
 .signal-card-type   { font-size: 10px; font-weight: 700; color: #8F8FA3; text-transform: uppercase; letter-spacing: 0.4px; }
 .signal-card-text   { font-size: 12px; color: #2E2E38; margin-top: 2px; line-height: 1.4; }
 .signal-card-date   { font-size: 10px; color: #8F8FA3; margin-top: 3px; }
@@ -684,12 +664,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
+  padding: 2px 10px;
   border-radius: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .decision-advance { background: #E8F5E9; color: #2E7D32; }
@@ -972,3 +950,181 @@ body {
 .ant-slider-rail { background: #E0E0E0; }
 .ant-slider-track { background: #543FDE; }
 .ant-slider-handle::after { box-shadow: 0 0 0 2px #543FDE !important; }
+
+/* ── Platform-hosted layout (no custom top nav) ──────────── */
+.app-layout-no-topnav .app-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid #DBE4E8;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.header-status-tag {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dummy-data-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+}
+
+.dummy-data-toggle-label {
+  font-size: 12px;
+  color: #65657B;
+  font-weight: 500;
+}
+
+.empty-center-inline {
+  padding: 32px 16px;
+  text-align: center;
+  color: #8F8FA3;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.decision-radio { display: flex; align-items: center; gap: 6px; }
+.decision-radio-advance { color: #28A464; font-weight: 600; }
+.decision-radio-watch   { color: #CCB718; font-weight: 600; }
+.decision-radio-kill    { color: #C20A29; font-weight: 600; }
+
+.app-initializing {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+/* ── Sidebar nav icons ──────────────────────────────────── */
+.sidebar-nav-icon {
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.sidebar-nav-item.active .sidebar-nav-icon { opacity: 1; }
+
+/* ── About link in header ───────────────────────────────── */
+.about-link {
+  color: #65657B;
+  padding: 4px 8px;
+}
+.about-link:hover { color: #543FDE !important; background: #F0EEFF !important; }
+
+/* ── About modal ────────────────────────────────────────── */
+.about-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.about-modal-body .about-lede {
+  font-size: 14px;
+  color: #3F4547;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+.about-modal-body .about-section { margin-bottom: 16px; }
+.about-modal-body .about-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8F8FA3;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+.about-modal-body .about-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #3F4547;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.about-modal-body .about-list li { margin-bottom: 4px; }
+
+.about-sub {
+  font-size: 13px;
+  color: #65657B;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+/* In-plain-terms cards */
+.about-plain .plain-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.plain-card {
+  background: #F7F6FE;
+  border: 1px solid #E4E0F7;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.plain-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #543FDE;
+  margin-bottom: 4px;
+}
+.plain-card p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #3F4547;
+  line-height: 1.55;
+}
+.plain-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+  color: #3F4547;
+  line-height: 1.55;
+}
+.plain-list li { margin-bottom: 3px; }
+
+/* Domino integrations grid */
+.integrations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.integration-card {
+  background: #FAFAFA;
+  border: 1px solid #DBE4E8;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.integration-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #543FDE;
+  margin-bottom: 4px;
+}
+.integration-card-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: #3F4547;
+  line-height: 1.5;
+}
+.integration-card-list li { margin-bottom: 3px; }
+
+/* Decision badge — leave room for leading icon */
+.decision-badge .anticon { margin-right: 2px; }

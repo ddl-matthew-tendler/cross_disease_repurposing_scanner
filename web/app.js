@@ -67,8 +67,27 @@ var ConfigProvider = _antd.ConfigProvider, Button = _antd.Button, Input = _antd.
     Popconfirm = _antd.Popconfirm;
 
 var _r = React;
-var h = _r.createElement, useState = _r.useState, useEffect = _r.useEffect,
+var h = _r.createElement, Fragment = _r.Fragment,
+    useState = _r.useState, useEffect = _r.useEffect,
     useMemo = _r.useMemo, useRef = _r.useRef, useCallback = _r.useCallback;
+
+var _icons = (typeof window !== 'undefined' && window.icons) ? window.icons : {};
+var ExperimentOutlined = _icons.ExperimentOutlined, BarChartOutlined = _icons.BarChartOutlined,
+    InboxOutlined = _icons.InboxOutlined, AuditOutlined = _icons.AuditOutlined,
+    InfoCircleOutlined = _icons.InfoCircleOutlined, CheckCircleFilled = _icons.CheckCircleFilled,
+    CloseCircleFilled = _icons.CloseCircleFilled, EyeOutlined = _icons.EyeOutlined,
+    RiseOutlined = _icons.RiseOutlined, FallOutlined = _icons.FallOutlined,
+    ArrowRightOutlined = _icons.ArrowRightOutlined, SearchOutlined = _icons.SearchOutlined;
+
+/* ── Highcharts global theme ──────────────────────────────── */
+if (typeof Highcharts !== 'undefined') {
+  Highcharts.setOptions({
+    colors: ['#543FDE', '#0070CC', '#28A464', '#CCB718', '#FF6543', '#E835A7', '#2EDCC4', '#A9734C'],
+    chart: { style: { fontFamily: 'Inter, Lato, Helvetica Neue, Arial, sans-serif' } },
+    title: { style: { color: '#2E2E38', fontWeight: '600' } },
+    credits: { enabled: false },
+  });
+}
 
 /* ── Domino Theme ─────────────────────────────────────────── */
 var dominoTheme = {
@@ -77,7 +96,7 @@ var dominoTheme = {
     colorText: '#2E2E38', colorTextSecondary: '#65657B', colorTextTertiary: '#8F8FA3',
     colorSuccess: '#28A464', colorWarning: '#CCB718', colorError: '#C20A29', colorInfo: '#0070CC',
     colorBgContainer: '#FFFFFF', colorBgLayout: '#FAFAFA', colorBorder: '#E0E0E0',
-    fontFamily: 'Inter, Lato, Helvetica Neue, Arial, sans-serif',
+    fontFamily: 'Inter, Lato, Helvetica Neue, Helvetica, Arial, sans-serif',
     fontSize: 14, borderRadius: 4, borderRadiusLG: 8,
   },
   components: {
@@ -101,7 +120,7 @@ function taCls(ta) {
 }
 
 function taLabel(ta) {
-  var map = { autoimmune: 'Autoimmune', oncology: 'Oncology', fibrotic: 'Fibrotic/Resp.',
+  var map = { autoimmune: 'Immunology', oncology: 'Oncology', fibrotic: 'Fibrotic/Resp.',
               metabolic: 'Metabolic', neurological: 'Neurological', hematologic: 'Hematologic',
               rare: 'Rare Disease', other: 'Other' };
   return map[ta] || ta;
@@ -130,8 +149,15 @@ function decisionCls(d) {
   return 'decision-badge decision-' + (d || 'watch');
 }
 
+function decisionIcon(d) {
+  if (d === 'advance') return CheckCircleFilled;
+  if (d === 'kill')    return CloseCircleFilled;
+  if (d === 'watch')   return EyeOutlined;
+  return null;
+}
+
 function decisionLabel(d) {
-  return { advance: '▲ Advance', kill: '✕ Kill', watch: '◎ Watch' }[d] || d;
+  return { advance: 'Advance', kill: 'Kill', watch: 'Watch' }[d] || d;
 }
 
 function formatDate(iso) {
@@ -219,7 +245,7 @@ function ScoreBar(props) {
 var AXIS_COLORS = ['#543FDE', '#0070CC', '#28A464', '#CCB718', '#FF6543'];
 var AXIS_KEYS = ['biologicalPlausibility', 'unmetNeed', 'competitiveWhitespace', 'translationalFeasibility', 'commercialAttractiveness'];
 var AXIS_SHORT = ['BP', 'UN', 'CW', 'TF', 'CA'];
-var AXIS_FULL  = ['Biological Plausibility', 'Unmet Need', 'Competitive Whitespace', 'Translational Feasibility', 'Commercial Attractiveness'];
+var AXIS_FULL  = ['Biological plausibility', 'Unmet need', 'Competitive whitespace', 'Translational feasibility', 'Commercial attractiveness'];
 
 function ScoreMiniBar(props) {
   var scores = props.scores || {};
@@ -400,9 +426,9 @@ function CompoundList(props) {
   }, [portfolio, search]);
 
   var groups = [
-    { key: 'active',      label: 'Active Clinical' },
+    { key: 'active',      label: 'Active clinical' },
     { key: 'preclinical', label: 'Preclinical' },
-    { key: 'shelved',     label: 'Shelved / De-prioritized' },
+    { key: 'shelved',     label: 'Shelved / de-prioritized' },
   ];
 
   return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
@@ -432,8 +458,10 @@ function CompoundList(props) {
           })
         );
       }),
-      !filtered.length && h('div', { className: 'empty-center', style: { padding: '24px 16px' } },
-        h('div', { className: 'empty-center-text' }, 'No compounds match'),
+      !filtered.length && h('div', { className: 'empty-center empty-center-inline' },
+        h('div', { className: 'empty-center-text' }, 'No compounds match your search'),
+        h('div', { className: 'empty-center-sub' }, 'Try different keywords or clear the search above'),
+        h(Button, { size: 'small', type: 'link', onClick: function() { onSearch(''); } }, 'Clear search')
       )
     )
   );
@@ -485,7 +513,9 @@ function IndicationTable(props) {
       onFilter: function(v, r) { return r.ta === v; },
       render: function(name, rec) {
         return h('div', { className: 'indication-name-cell' },
-          h('div', { className: 'ind-name' }, name),
+          h(Tooltip, { title: name, mouseEnterDelay: 0.3 },
+            h('div', { className: 'ind-name' }, name)
+          ),
           h('div', { style: { marginTop: 2 } }, h('span', { className: taCls(rec.ta) }, taLabel(rec.ta)))
         );
       } },
@@ -509,10 +539,10 @@ function IndicationTable(props) {
         var col = v >= 10 ? '#28A464' : v >= 6 ? '#CCB718' : '#C20A29';
         return h('span', { style: { fontWeight: 700, fontSize: 13, color: col } }, v);
       } },
-    { title: '', key: 'action', width: 54,
+    { title: '', key: 'action', width: 72, fixed: 'right',
       render: function(_, rec) {
         return h(Button, { size: 'small', type: 'link',
-                           onClick: function(e) { e.stopPropagation(); onSelect(rec); } }, 'View');
+                           onClick: function(e) { e.stopPropagation(); onSelect(rec); } }, 'Open');
       } },
   ];
 
@@ -566,9 +596,9 @@ function DecisionModal(props) {
     h('div', { style: { marginBottom: 12 } },
       h('div', { style: { fontSize: 12, fontWeight: 600, color: '#2E2E38', marginBottom: 6 } }, 'Decision'),
       h(Radio.Group, { value: decVal, onChange: function(e) { setDecVal(e.target.value); } },
-        h(Radio, { value: 'advance', style: { color: '#28A464' } }, '▲ Advance to next step'),
-        h(Radio, { value: 'watch',   style: { color: '#CCB718', marginLeft: 8 } }, '◎ Watch / Monitor'),
-        h(Radio, { value: 'kill',    style: { color: '#C20A29', marginLeft: 8 } }, '✕ Kill / De-prioritize')
+        h(Radio, { value: 'advance', className: 'decision-radio decision-radio-advance' }, 'Advance to next step'),
+        h(Radio, { value: 'watch',   className: 'decision-radio decision-radio-watch' }, 'Watch / monitor'),
+        h(Radio, { value: 'kill',    className: 'decision-radio decision-radio-kill' }, 'Kill / de-prioritize')
       )
     ),
     h('div', { style: { marginBottom: 12 } },
@@ -591,7 +621,7 @@ function DossierPane(props) {
 
   if (!compound || !indication) {
     return h('div', { className: 'dossier-empty' },
-      h('div', { className: 'dossier-empty-icon' }, '🔬'),
+      h('div', { className: 'dossier-empty-icon' }),
       h('div', { className: 'dossier-empty-text' }, 'Select an indication to view dossier'),
       h('div', { className: 'dossier-empty-sub' }, 'Click any row in the centre pane')
     );
@@ -613,16 +643,14 @@ function DossierPane(props) {
           h('div', { className: 'dossier-indication-name' }, indication.name),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 } },
             h('span', { className: taCls(indication.ta) }, taLabel(indication.ta)),
-            dossier && h('span', { className: 'dossier-draft-badge' }, '⚠ ' + dossier.draftStatus)
+            dossier && h('span', { className: 'dossier-draft-badge' }, dossier.draftStatus)
           )
         ),
-        /* composite score summary */
+        /* radar chart (axis numerics exposed in the radar tooltip) */
         h('div', { className: 'dossier-section' },
-          h('div', { className: 'dossier-section-title' }, 'Overall score & axes'),
-          h(AxisRows, { scores: indication.scores })
+          h('div', { className: 'dossier-section-title' }, 'Score profile'),
+          h(RadarChart, { indication: indication })
         ),
-        /* radar chart */
-        h(RadarChart, { indication: indication }),
         /* callout row */
         h('div', { className: 'callout-row' },
           h('div', { className: 'callout-card callout-' + (indication.patentRunwayYears >= 10 ? 'green' : indication.patentRunwayYears >= 6 ? 'amber' : 'red') },
@@ -972,15 +1000,14 @@ function DustyShelfPage(props) {
       h('div', { style: { fontWeight: 600, marginBottom: 8, fontSize: 13 } }, 'Rescue Hypothesis: ', h('span', { style: { fontWeight: 400, color: '#65657B' } }, d.rescueRationale)),
       h('div', { style: { fontWeight: 600, fontSize: 12, color: '#2E2E38', marginBottom: 8 } }, 'External signals since shelving'),
       (d.externalChanges || []).map(function(sig, i) {
-        return h('div', { key: i, className: 'signal-card' },
-          h('div', { className: 'signal-card-icon' }, sig.icon),
+        return h('div', { key: i, className: 'signal-card signal-card-' + sig.impact },
           h('div', { className: 'signal-card-content' },
             h('div', { className: 'signal-card-type' }, sig.type),
             h('div', { className: 'signal-card-text' }, sig.text),
             h('div', { style: { display: 'flex', gap: 12, marginTop: 4 } },
               h('div', { className: 'signal-card-date' }, sig.date),
               h('div', { className: 'signal-card-impact ' + sig.impact },
-                sig.impact === 'positive' ? '↑ Positive signal' : '↓ Negative signal')
+                sig.impact === 'positive' ? 'Positive signal' : 'Negative signal')
             )
           )
         );
@@ -1069,7 +1096,13 @@ function AuditPage(props) {
     { title: 'Decision', dataIndex: 'decision', key: 'decision', width: 110,
       filters: [{ text: 'Advance', value: 'advance' }, { text: 'Kill', value: 'kill' }, { text: 'Watch', value: 'watch' }],
       onFilter: function(v, rec) { return rec.decision === v; },
-      render: function(v) { return h('span', { className: decisionCls(v) }, decisionLabel(v)); } },
+      render: function(v) {
+        var Ico = decisionIcon(v);
+        return h('span', { className: decisionCls(v) },
+          Ico ? h(Ico, { style: { fontSize: 11 } }) : null,
+          decisionLabel(v)
+        );
+      } },
     { title: 'Rationale', dataIndex: 'rationale', key: 'rationale', ellipsis: true,
       render: function(v) { return h('span', { style: { fontSize: 12, color: '#65657B' } }, v); } },
     { title: 'Decided By', dataIndex: 'decidedBy', key: 'by', width: 140, ellipsis: true,
@@ -1162,18 +1195,18 @@ function DebugPanel(props) {
     h('button', {
       className: 'debug-fab',
       onClick: function() { setOpen(function(v) { return !v; }); },
-      title: 'Debug Panel  (Ctrl+Shift+D)'
+      title: 'Debug panel (Ctrl+Shift+D)'
     },
-      '🐛',
+      'Debug',
       errorCount > 0 && h('span', { className: 'debug-fab-err' }, errorCount)
     ),
 
     open && h('div', { className: 'debug-panel' },
       h('div', { className: 'debug-panel-header' },
-        h('span', { className: 'debug-panel-title' }, '🐛 Debug'),
+        h('span', { className: 'debug-panel-title' }, 'Debug'),
         h('div', { className: 'debug-panel-tabs' },
           h('button', { className: 'debug-tab' + (tab === 'logs' ? ' active' : ''), onClick: function() { setTab('logs'); } },
-            'Logs' + (errorCount || warnCount ? ' (' + (errorCount ? errorCount + '✕' : '') + (warnCount ? ' ' + warnCount + '⚠' : '').trim() + ')' : '')
+            'Logs' + (errorCount || warnCount ? ' (' + (errorCount ? errorCount + ' err' : '') + (warnCount ? ' ' + warnCount + ' warn' : '').trim() + ')' : '')
           ),
           h('button', { className: 'debug-tab' + (tab === 'api' ? ' active' : ''), onClick: function() { setTab('api'); } },
             'API' + (pendingCount ? ' (' + pendingCount + '…)' : ' (' + _debugApiCalls.length + ')')
@@ -1198,7 +1231,7 @@ function DebugPanel(props) {
             try { localStorage.setItem('repurposing_debug', open ? '0' : '1'); } catch(e) {}
             setOpen(false);
           }}, 'Persist'),
-          h('button', { className: 'debug-close-btn', onClick: function() { setOpen(false); } }, '✕')
+          h('button', { className: 'debug-close-btn', onClick: function() { setOpen(false); } }, 'Close')
         )
       ),
 
@@ -1243,14 +1276,12 @@ function DebugPanel(props) {
 /* ── Sidebar ──────────────────────────────────────────────── */
 function Sidebar(props) {
   var activeTab = props.activeTab, onTabChange = props.onTabChange;
-  var useDummy = props.useDummy, onToggleDummy = props.onToggleDummy;
-  var connected = props.connected;
 
   var tabs = [
-    { key: 'scanner',   icon: '⊙', label: 'Scanner' },
-    { key: 'dashboard', icon: '▦', label: 'Portfolio Dashboard' },
-    { key: 'shelf',     icon: '📦', label: 'Dusty Shelf' },
-    { key: 'audit',     icon: '📋', label: 'Decision Audit' },
+    { key: 'scanner',   label: 'Indication scanner', Icon: ExperimentOutlined },
+    { key: 'dashboard', label: 'Portfolio dashboard', Icon: BarChartOutlined },
+    { key: 'shelf',     label: 'Dusty shelf', Icon: InboxOutlined },
+    { key: 'audit',     label: 'Decision audit', Icon: AuditOutlined },
   ];
 
   return h('div', { className: 'app-sidebar' },
@@ -1263,17 +1294,10 @@ function Sidebar(props) {
         return h('div', { key: t.key,
                           className: 'sidebar-nav-item' + (activeTab === t.key ? ' active' : ''),
                           onClick: function() { onTabChange(t.key); } },
-          h('span', { className: 'sidebar-nav-icon' }, t.icon),
+          t.Icon ? h(t.Icon, { className: 'sidebar-nav-icon' }) : null,
           h('span', null, t.label)
         );
       })
-    ),
-    h('div', { className: 'sidebar-footer' },
-      h('span', { className: 'sidebar-footer-label' }, 'Demo Data'),
-      h(Switch, { checked: useDummy, onChange: onToggleDummy, size: 'small' }),
-      !connected && h(Tooltip, { title: 'Not connected to Domino backend' },
-        h('span', { style: { fontSize: 11, color: 'rgba(255,255,255,0.35)', marginLeft: 4 } }, '⚠')
-      )
     )
   );
 }
@@ -1283,6 +1307,7 @@ function App() {
   var _tab = useState('scanner');    var activeTab = _tab[0]; var setActiveTab = _tab[1];
   var _dum = useState(true);         var useDummy = _dum[0];  var setUseDummy = _dum[1];
   var _con = useState(false);        var connected = _con[0]; var setConnected = _con[1];
+  var _ini = useState(true);         var initializing = _ini[0]; var setInitializing = _ini[1];
   var _dec = useState(MOCK_DECISIONS.slice()); var decisions = _dec[0]; var setDecisions = _dec[1];
 
   var defaultWeights = { biologicalPlausibility: 20, unmetNeed: 20, competitiveWhitespace: 20,
@@ -1292,8 +1317,9 @@ function App() {
 
   useEffect(function() {
     apiGet('api/health').then(function(data) {
-      if (data && data.status === 'ok') setConnected(true);
-    }).catch(function() { /* stay in dummy mode */ });
+      if (data && data.status === 'ok' && data.connected) setConnected(true);
+    }).catch(function() { /* stay in dummy mode */ })
+      .finally(function() { setInitializing(false); });
   }, []);
 
   function handleToggleDummy(val) {
@@ -1315,6 +1341,8 @@ function App() {
   var tabHeaders = { scanner: 'Indication scanner', dashboard: 'Portfolio dashboard',
                      shelf: 'Dusty shelf', audit: 'Decision audit trail' };
 
+  var _abt = useState(false); var aboutOpen = _abt[0]; var setAboutOpen = _abt[1];
+
   var debugState = {
     activeTab: activeTab, useDummy: useDummy, connected: connected,
     decisionsCount: decisions.length, weights: weights,
@@ -1324,18 +1352,37 @@ function App() {
   };
 
   return h(ConfigProvider, { theme: dominoTheme },
-    h('div', { className: 'app-root' },
+    h('div', { className: 'app-root app-layout-no-topnav' },
       h(DebugPanel, { appState: debugState }),
-      h(Sidebar, { activeTab: activeTab, onTabChange: setActiveTab,
-                   useDummy: useDummy, onToggleDummy: handleToggleDummy, connected: connected }),
+      h(Sidebar, { activeTab: activeTab, onTabChange: setActiveTab }),
       h('div', { className: 'app-main' },
         h('div', { className: 'app-header' },
           h('div', { className: 'app-header-title' }, tabHeaders[activeTab] || activeTab),
-          connected && !useDummy && h(Tag, { color: 'green', style: { fontSize: 11 } }, '● Live'),
-          useDummy  && h(Tag, { color: 'orange', style: { fontSize: 11 } }, '◉ Demo Data')
+          h('div', { className: 'app-header-right' },
+            h(Button, { type: 'text', size: 'small',
+                        icon: InfoCircleOutlined ? h(InfoCircleOutlined, null) : null,
+                        onClick: function() { setAboutOpen(true); },
+                        className: 'about-link' }, 'About'),
+            connected && !useDummy
+              ? h(Tag, { color: 'green', className: 'header-status-tag' }, 'Live')
+              : h(Tag, { color: 'orange', className: 'header-status-tag' }, 'Demo data'),
+            !connected && h('div', { className: 'dummy-data-toggle' },
+              h('span', { className: 'dummy-data-toggle-label' }, 'Demo data'),
+              h(Tooltip, { title: useDummy
+                  ? 'Using built-in mock portfolio. Toggle off to attempt live Domino data.'
+                  : 'Domino backend unreachable. Toggle on to fall back to demo data.' },
+                h(Switch, { checked: useDummy, onChange: handleToggleDummy, size: 'small' })
+              )
+            )
+          )
         ),
         h('div', { className: 'app-content' },
-          activeTab === 'scanner' && h(ScannerPage, {
+          initializing
+            ? h('div', { className: 'app-initializing' },
+                h(Spin, { size: 'large', tip: 'Loading portfolio…' })
+              )
+            : null,
+          !initializing && activeTab === 'scanner' && h(ScannerPage, {
             portfolio: MOCK_PORTFOLIO,
             allIndications: MOCK_INDICATIONS,
             allDossiers: MOCK_DOSSIERS,
@@ -1343,22 +1390,172 @@ function App() {
             onDecisionRecord: handleDecision,
             useDummy: useDummy,
           }),
-          activeTab === 'dashboard' && h(DashboardPage, {
+          !initializing && activeTab === 'dashboard' && h(DashboardPage, {
             portfolio: MOCK_PORTFOLIO,
             allIndications: MOCK_INDICATIONS,
             weights: weights,
           }),
-          activeTab === 'shelf' && h(DustyShelfPage, {
+          !initializing && activeTab === 'shelf' && h(DustyShelfPage, {
             portfolio: MOCK_PORTFOLIO,
             dustyShelf: MOCK_DUSTY_SHELF,
           }),
-          activeTab === 'audit' && h(AuditPage, {
+          !initializing && activeTab === 'audit' && h(AuditPage, {
             decisions: decisions,
             portfolio: MOCK_PORTFOLIO,
             allIndications: MOCK_INDICATIONS,
           })
         )
-      )
+      ),
+      h(AboutModal, { open: aboutOpen, onClose: function() { setAboutOpen(false); } })
+    )
+  );
+}
+
+/* ── About Modal ──────────────────────────────────────────── */
+function AboutModal(props) {
+  return h(Modal, {
+    open: props.open,
+    onCancel: props.onClose,
+    footer: h(Button, { type: 'primary', onClick: props.onClose }, 'Got it'),
+    title: h('div', { className: 'about-modal-title' },
+      InfoCircleOutlined ? h(InfoCircleOutlined, { style: { color: '#543FDE' } }) : null,
+      h('span', null, 'About Repurposing Scanner')
+    ),
+    width: 720,
+  },
+    h('div', { className: 'about-modal-body' },
+      h('p', { className: 'about-lede' },
+        'A committee-ready workspace for translational leads evaluating their compound portfolio ',
+        'against thousands of candidate indications on five weighted axes.'
+      ),
+      h('div', { className: 'about-section about-plain' },
+        h('div', { className: 'about-section-title' }, 'In plain terms'),
+        h('div', { className: 'plain-grid' },
+          h('div', { className: 'plain-card' },
+            h('div', { className: 'plain-card-title' }, 'What is this app for?'),
+            h('p', null,
+              'Pharma companies own drug candidates (compounds) that were developed for one disease but could potentially treat others. ',
+              'This app helps Translational Medicine leads and portfolio committees systematically ask: ',
+              h('em', null, 'which of our compounds could also work for which other diseases, and which of those bets are worth pursuing?')
+            )
+          ),
+          h('div', { className: 'plain-card' },
+            h('div', { className: 'plain-card-title' }, 'Why is it valuable?'),
+            h('p', null,
+              'Drug discovery takes 10+ years and costs billions. Repurposing an existing compound for a new indication skips most of the safety work, ',
+              'cutting years and cost. The hard part is ranking hundreds of possible matches by biology, unmet need, competition, feasibility, and commercial fit ',
+              'so the committee can invest in the strongest few.'
+            )
+          ),
+          h('div', { className: 'plain-card' },
+            h('div', { className: 'plain-card-title' }, 'How is it done today?'),
+            h('p', null,
+              'Mostly by hand: a scientist reads literature, pulls competitor data from subscription databases, builds a spreadsheet scoring a handful of indications, ',
+              'and writes a slide dossier. Each compound takes weeks. Shelved assets rarely get re-examined unless someone champions them. ',
+              'Committee decisions are recorded in meeting minutes, not tied back to the evidence that informed them.'
+            )
+          ),
+          h('div', { className: 'plain-card' },
+            h('div', { className: 'plain-card-title' }, 'How does this make it easier?'),
+            h('ul', { className: 'plain-list' },
+              h('li', null, h('strong', null, 'Breadth: '), 'scores every compound against dozens of indications automatically, not just the few a scientist thought to check.'),
+              h('li', null, h('strong', null, 'Speed: '), 'tuning the weight sliders re-ranks the list instantly, so a committee can explore tradeoffs live in the room.'),
+              h('li', null, h('strong', null, 'Dossiers on demand: '), 'the right panel drafts a committee-ready rationale with citations, evidence graph, and competitive landscape in one click.'),
+              h('li', null, h('strong', null, 'Shelved assets stay active: '), 'the Dusty shelf flags de-prioritized compounds when external signals (new biomarker, competitor failure) change the case for them.'),
+              h('li', null, h('strong', null, 'Defensible audit trail: '), 'every Advance / Watch / Kill decision is pinned to the exact scores and evidence at the time it was made.')
+            )
+          )
+        )
+      ),
+      h('div', { className: 'about-section' },
+        h('div', { className: 'about-section-title' }, 'What you can do'),
+        h('ul', { className: 'about-list' },
+          h('li', null, h('strong', null, 'Indication scanner'), ' — pick a compound, tune the five scoring-axis weights, and watch the ranked indication list re-sort in real time. Click Open to read the full dossier.'),
+          h('li', null, h('strong', null, 'Portfolio dashboard'), ' — see the top-10 repurposing candidates across every compound, with the therapeutic-area breakdown.'),
+          h('li', null, h('strong', null, 'Dusty shelf'), ' — systematically re-evaluate de-prioritized assets against external signals that have emerged since shelving.'),
+          h('li', null, h('strong', null, 'Decision audit'), ' — an immutable record of committee decisions, each pinned to the evidence snapshot that informed it.')
+        )
+      ),
+      h('div', { className: 'about-section' },
+        h('div', { className: 'about-section-title' }, 'Scoring axes'),
+        h('ul', { className: 'about-list' },
+          h('li', null, h('strong', null, 'Biological plausibility'), ' — target/mechanism fit, preclinical evidence'),
+          h('li', null, h('strong', null, 'Unmet need'), ' — disease burden, standard-of-care gaps'),
+          h('li', null, h('strong', null, 'Competitive whitespace'), ' — competitor programs by phase, patent runway'),
+          h('li', null, h('strong', null, 'Translational feasibility'), ' — biomarker readiness, trial design'),
+          h('li', null, h('strong', null, 'Commercial attractiveness'), ' — market size, payer dynamics')
+        )
+      ),
+      h('div', { className: 'about-section' },
+        h('div', { className: 'about-section-title' }, 'How this becomes real on Domino'),
+        h('p', { className: 'about-sub' },
+          'The POC runs on bundled demo data. Production deployment maps every capability to a concrete Domino surface:'
+        ),
+        h('div', { className: 'integrations-grid' },
+          h(IntegrationCard, {
+            title: 'Data sources',
+            items: [
+              'Domino Datasets and Data Sources connect internal portfolio databases (compound library, CMC, preclinical PK/PD) and external feeds — ChEMBL, Open Targets, ClinicalTrials.gov, MONDO, DrugBank, GlobalData, Cortellis — as mounted paths inside the Workspace.',
+              'Snowflake / Databricks / S3 connectors pull competitive-intel and patent data on a scheduled refresh.',
+              'Domino Flows orchestrates the nightly ETL that re-scores every compound × indication pair.'
+            ]
+          }),
+          h(IntegrationCard, {
+            title: 'Model APIs',
+            items: [
+              'Indication-ranking model deployed as a Domino Model API: input = compound ID + weight vector, output = ranked list with per-axis sub-scores. The Scanner calls it on every slider change.',
+              'Target–disease association scorer and competitive-whitespace estimator each live as separate Model APIs so the Ranker can compose them.',
+              'Dusty-shelf "rescue score" is its own model endpoint, retrained when new external signals land.'
+            ]
+          }),
+          h(IntegrationCard, {
+            title: 'LLM and Domino Extensions',
+            items: [
+              'Dossier drafting uses a tenant-private Claude endpoint exposed via a Domino Extension — prompts stay inside the Domino network boundary.',
+              'Evidence-graph RAG pulls citations from an internal literature index (PubMed + internal reports) through a Vector Store Extension.',
+              'Committee-brief export renders the dossier to PDF through a shared Workspace template.'
+            ]
+          }),
+          h(IntegrationCard, {
+            title: 'MLOps — monitoring and retraining',
+            items: [
+              'Scheduled Jobs re-score the full portfolio weekly; Flows triggers retraining when new Open Targets or ClinicalTrials.gov data lands.',
+              'Model Monitoring tracks prediction drift per scoring axis and fires alerts when the axis distribution shifts beyond threshold.',
+              'Experiment Manager captures each retraining run, tying hyperparameters and data snapshot to the deployed Model API version.'
+            ]
+          }),
+          h(IntegrationCard, {
+            title: 'Governance and audit',
+            items: [
+              'Every committee decision creates an entry in Domino Governance tied to the model version, data snapshot, and signed-off evidence bundle.',
+              'Policy-based approvals gate promoting a candidate from Watch to Advance — required reviewers defined per therapeutic area.',
+              'Immutable lineage: scores, weights, and dossier text at the time of decision are preserved so the audit trail is defensible.'
+            ]
+          }),
+          h(IntegrationCard, {
+            title: 'Users, access, and cost',
+            items: [
+              'Workspace access and scoped Project roles control which portfolio a lead can see (oncology vs. immunology vs. rare disease).',
+              'SSO / SAML integration for identity; PATs for service-to-service calls into the Model APIs.',
+              'Compute Environments pin the exact Python / R versions for reproducibility; GPU tiers reserved for LLM-heavy dossier drafting only.'
+            ]
+          })
+        )
+      ),
+      h(Alert, {
+        type: 'info', showIcon: true,
+        message: 'Proof-of-concept',
+        description: 'Non-GxP. Dummy portfolio and indication data. Dossier text is AI-drafted and requires scientist review before use.',
+      })
+    )
+  );
+}
+
+function IntegrationCard(props) {
+  return h('div', { className: 'integration-card' },
+    h('div', { className: 'integration-card-title' }, props.title),
+    h('ul', { className: 'integration-card-list' },
+      (props.items || []).map(function(it, i) { return h('li', { key: i }, it); })
     )
   );
 }
