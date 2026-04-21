@@ -1180,3 +1180,6 @@ body {
   align-items: center;
 }
 .tour-actions-right { display: flex; align-items: center; }
+
+.dashboard-top-row { cursor: pointer; }
+.dashboard-top-row:hover td { background: #F5F4FD !important; }

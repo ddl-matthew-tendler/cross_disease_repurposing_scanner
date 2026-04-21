@@ -758,6 +758,19 @@ function ScannerPage(props) {
   var _ind = useState(null);  var selInd   = _ind[0]; var setSelInd  = _ind[1];
   var _dm = useState(false);  var dmVis    = _dm[0];  var setDmVis   = _dm[1];
 
+  useEffect(function() {
+    if (!props.preselect) return;
+    var cmp = (portfolio || []).find(function(c) { return c.id === props.preselect.compoundId; });
+    if (cmp) setSelCmp(cmp);
+    var inds = (allIndications && cmp) ? allIndications[cmp.id] || [] : [];
+    var ind = inds.find(function(i) { return i.id === props.preselect.indicationId; });
+    if (ind) {
+      var rankedInds = computeRanked(inds, props.weights);
+      var fresh = rankedInds.find(function(r) { return r.id === ind.id; }) || ind;
+      setSelInd(fresh);
+    }
+  }, [props.preselect && props.preselect.token]);
+
   var rawIndications = useMemo(function() {
     if (!selCmp) return [];
     return allIndications[selCmp.id] || [];
@@ -880,8 +893,11 @@ function DashboardPage(props) {
                  dataLabels: { enabled: true, format: '{point.y:.1f}', style: { fontSize: '10px', fontWeight: '600' } } }],
       tooltip: { formatter: function() { return '<b>' + this.x + '</b><br/>Score: ' + this.y.toFixed(1); } },
       plotOptions: {
-        bar: { borderRadius: 2,
-               point: { events: { click: function() { message.info('Switch to Scanner tab to explore this candidate.'); } } } }
+        bar: { borderRadius: 2, cursor: 'pointer',
+               point: { events: { click: function() {
+                 var cand = topCandidates[this.index];
+                 if (cand && onNavigate) onNavigate(cand.compound.id, cand.indication.id);
+               } } } }
       },
     });
     return function() {
@@ -945,7 +961,9 @@ function DashboardPage(props) {
         h('div', { className: 'section-card-title' }, 'Top 10 candidates')
       ),
       h(Table, { dataSource: topCandidates, columns: columns, rowKey: function(r) { return r.compound.id + '-' + r.indication.id; },
-                 size: 'small', pagination: false, style: { margin: '0 8px 8px' } })
+                 size: 'small', pagination: false, style: { margin: '0 8px 8px' },
+                 rowClassName: function() { return 'dashboard-top-row'; },
+                 onRow: function(rec) { return { onClick: function() { if (onNavigate) onNavigate(rec.compound.id, rec.indication.id); } }; } })
     )
   );
 }
@@ -1342,6 +1360,12 @@ function App() {
                      shelf: 'Dusty shelf', audit: 'Decision audit trail' };
 
   var _abt = useState(false); var aboutOpen = _abt[0]; var setAboutOpen = _abt[1];
+  var _pre = useState(null); var preselect = _pre[0]; var setPreselect = _pre[1];
+
+  function handleDashboardNavigate(compoundId, indicationId) {
+    setPreselect({ compoundId: compoundId, indicationId: indicationId, token: Date.now() });
+    setActiveTab('scanner');
+  }
 
   var _tr = useState(-1); var tourStep = _tr[0]; var setTourStep = _tr[1];
   useEffect(function() {
@@ -1405,11 +1429,13 @@ function App() {
             weights: weights, onWeightsChange: setWeights,
             onDecisionRecord: handleDecision,
             useDummy: useDummy,
+            preselect: preselect,
           }),
           !initializing && activeTab === 'dashboard' && h(DashboardPage, {
             portfolio: MOCK_PORTFOLIO,
             allIndications: MOCK_INDICATIONS,
             weights: weights,
+            onNavigate: handleDashboardNavigate,
           }),
           !initializing && activeTab === 'shelf' && h(DustyShelfPage, {
             portfolio: MOCK_PORTFOLIO,
