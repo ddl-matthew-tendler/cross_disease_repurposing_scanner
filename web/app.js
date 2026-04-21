@@ -471,7 +471,7 @@ function CompoundList(props) {
 function WeightSliders(props) {
   var weights = props.weights, onChange = props.onChange;
   var LABELS = ['Bio. plausibility', 'Unmet need', 'Comp. whitespace', 'Translational', 'Commercial'];
-  return h('div', { className: 'weights-panel' },
+  return h('div', { className: 'weights-panel', 'data-tour': 'weights' },
     h('div', { className: 'weights-title' }, 'Scoring weights'),
     h('div', { className: 'weights-grid' },
       AXIS_KEYS.map(function(k, i) {
@@ -546,7 +546,7 @@ function IndicationTable(props) {
       } },
   ];
 
-  return h('div', { className: 'indication-table-wrap' },
+  return h('div', { className: 'indication-table-wrap', 'data-tour': 'indications' },
     h(Table, {
       dataSource: indications || [],
       columns: columns,
@@ -780,7 +780,7 @@ function ScannerPage(props) {
 
   return h('div', { className: 'scanner-layout' },
     /* Left pane */
-    h('div', { className: 'scanner-pane' },
+    h('div', { className: 'scanner-pane', 'data-tour': 'portfolio' },
       h('div', { className: 'pane-header' },
         h('div', { className: 'pane-title' }, 'Portfolio (' + portfolio.length + ' assets)')
       ),
@@ -788,7 +788,7 @@ function ScannerPage(props) {
                         search: search, onSearch: setSearch })
     ),
     /* Centre pane */
-    h('div', { className: 'scanner-pane', style: { display: 'flex', flexDirection: 'column' } },
+    h('div', { className: 'scanner-pane', 'data-tour': 'center', style: { display: 'flex', flexDirection: 'column' } },
       selCmp
         ? h('div', { className: 'pane-header' },
             h('div', { className: 'pane-title' }, selCmp.name + ' · ' + selCmp.mechanism),
@@ -805,7 +805,7 @@ function ScannerPage(props) {
           )
     ),
     /* Right pane */
-    h('div', { className: 'scanner-pane' },
+    h('div', { className: 'scanner-pane', 'data-tour': 'dossier' },
       h('div', { className: 'pane-header' },
         h('div', { className: 'pane-title' }, selInd ? 'Dossier preview' : 'Dossier'),
         selInd && h('div', { style: { fontSize: 11, color: '#8F8FA3', marginTop: 2 } }, 'Rank #' + selInd.rank + ' · Score ' + (selInd.composite || 0).toFixed(1))
@@ -1284,7 +1284,7 @@ function Sidebar(props) {
     { key: 'audit',     label: 'Decision audit', Icon: AuditOutlined },
   ];
 
-  return h('div', { className: 'app-sidebar' },
+  return h('div', { className: 'app-sidebar', 'data-tour': 'sidebar' },
     h('div', { className: 'sidebar-logo' },
       h('div', { className: 'sidebar-logo-title' }, 'Repurposing Scanner'),
       h('div', { className: 'sidebar-logo-sub' }, 'Cross-Disease Indication Intelligence')
@@ -1343,6 +1343,19 @@ function App() {
 
   var _abt = useState(false); var aboutOpen = _abt[0]; var setAboutOpen = _abt[1];
 
+  var _tr = useState(-1); var tourStep = _tr[0]; var setTourStep = _tr[1];
+  useEffect(function() {
+    try {
+      if (!localStorage.getItem('repurposing_tour_seen')) {
+        setTimeout(function() { setTourStep(0); }, 600);
+      }
+    } catch(e) {}
+  }, []);
+  function endTour(completed) {
+    setTourStep(-1);
+    try { localStorage.setItem('repurposing_tour_seen', completed ? 'completed' : 'dismissed'); } catch(e) {}
+  }
+
   var debugState = {
     activeTab: activeTab, useDummy: useDummy, connected: connected,
     decisionsCount: decisions.length, weights: weights,
@@ -1358,7 +1371,10 @@ function App() {
       h('div', { className: 'app-main' },
         h('div', { className: 'app-header' },
           h('div', { className: 'app-header-title' }, tabHeaders[activeTab] || activeTab),
-          h('div', { className: 'app-header-right' },
+          h('div', { className: 'app-header-right', 'data-tour': 'header' },
+            h(Button, { type: 'text', size: 'small',
+                        onClick: function() { setActiveTab('scanner'); setTourStep(0); },
+                        className: 'about-link', 'data-tour': 'tour-btn' }, 'Take a tour'),
             h(Button, { type: 'text', size: 'small',
                         icon: InfoCircleOutlined ? h(InfoCircleOutlined, null) : null,
                         onClick: function() { setAboutOpen(true); },
@@ -1406,7 +1422,151 @@ function App() {
           })
         )
       ),
-      h(AboutModal, { open: aboutOpen, onClose: function() { setAboutOpen(false); } })
+      h(AboutModal, { open: aboutOpen, onClose: function() { setAboutOpen(false); } }),
+      tourStep >= 0 && h(TourWizard, {
+        step: tourStep,
+        onStep: function(s) {
+          if (s === 0 || s === 1 || s === 2 || s === 3 || s === 4 || s === 5) setActiveTab('scanner');
+          setTourStep(s);
+        },
+        onClose: endTour,
+      })
+    )
+  );
+}
+
+/* ── Tour Wizard ──────────────────────────────────────────── */
+var TOUR_STEPS = [
+  { target: null, placement: 'center',
+    title: 'Welcome to Repurposing Scanner',
+    body: 'Systematically rank every compound in your portfolio against thousands of candidate indications — five weighted scoring axes, committee-ready dossiers, and a defensible audit trail. Takes about 90 seconds to walk through.' },
+  { target: '[data-tour="sidebar"]', placement: 'right',
+    title: 'Four connected workspaces',
+    body: 'Indication scanner (where you\'ll spend most of your time), Portfolio dashboard (top candidates across all assets), Dusty shelf (re-evaluate de-prioritized compounds), and Decision audit (immutable committee record).' },
+  { target: '[data-tour="portfolio"]', placement: 'right',
+    title: 'Start with a compound',
+    body: 'Pick any asset from your portfolio. Active and shelved compounds are grouped separately. The Scanner will immediately rank every candidate indication for it.' },
+  { target: '[data-tour="weights"]', placement: 'bottom',
+    title: 'Tune the five scoring axes',
+    body: 'Adjust the weight sliders — biological plausibility, unmet need, competitive whitespace, translational feasibility, commercial attractiveness. The ranking re-sorts live so the committee can explore tradeoffs in the room.' },
+  { target: '[data-tour="indications"]', placement: 'top',
+    title: 'Ranked candidate indications',
+    body: 'Each row is a compound × indication pair with composite score, per-axis sub-scores, and competitive context. Click any row to open its dossier on the right.' },
+  { target: '[data-tour="dossier"]', placement: 'left',
+    title: 'Committee-ready dossier',
+    body: 'AI-drafted rationale with citations, evidence graph, and competitive landscape. Record an Advance / Watch / Kill decision — it\'s pinned to the exact scores and evidence at that moment.' },
+  { target: '[data-tour="header"]', placement: 'bottom',
+    title: 'Switch data sources anytime',
+    body: 'Toggle between Demo data (built-in mock portfolio) and Live data (connected Domino backend). Re-launch this tour any time from the "Take a tour" link in the header.' },
+];
+
+function TourWizard(props) {
+  var step = props.step;
+  var cfg = TOUR_STEPS[step];
+  var _r = useState({ tick: 0 }); var rerender = _r[1];
+
+  useEffect(function() {
+    // Auto-select a compound so downstream anchor targets exist
+    if (step >= 3 && step <= 5) {
+      if (!document.querySelector('[data-tour="weights"]')) {
+        var firstCmp = document.querySelector('.compound-item');
+        if (firstCmp) firstCmp.click();
+      }
+    }
+    // Auto-select first indication row so dossier is populated
+    if (step === 5) {
+      setTimeout(function() {
+        if (!document.querySelector('.dossier-content')) {
+          var firstRow = document.querySelector('.indication-table-wrap .ant-table-row');
+          if (firstRow) firstRow.click();
+        }
+        rerender({ tick: Date.now() });
+      }, 120);
+    }
+    function onResize() { rerender({ tick: Date.now() }); }
+    function onKey(e) { if (e.key === 'Escape') props.onClose(false); }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('keydown', onKey);
+    var t = setTimeout(onResize, 80);
+    return function() {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKey);
+      clearTimeout(t);
+    };
+  }, [step]);
+
+  var rect = null;
+  if (cfg.target) {
+    var el = document.querySelector(cfg.target);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      rect = el.getBoundingClientRect();
+    }
+  }
+
+  var isLast = step === TOUR_STEPS.length - 1;
+  var isFirst = step === 0;
+
+  var pad = 8;
+  var spotlight = rect ? {
+    position: 'fixed',
+    top: (rect.top - pad) + 'px',
+    left: (rect.left - pad) + 'px',
+    width: (rect.width + pad * 2) + 'px',
+    height: (rect.height + pad * 2) + 'px',
+    borderRadius: '8px',
+    boxShadow: '0 0 0 9999px rgba(46, 46, 56, 0.55)',
+    pointerEvents: 'none',
+    zIndex: 10000,
+    transition: 'all 0.25s ease',
+  } : null;
+
+  var popoverStyle = { position: 'fixed', zIndex: 10001, width: 380 };
+  if (!rect || cfg.placement === 'center') {
+    popoverStyle.top = '50%'; popoverStyle.left = '50%';
+    popoverStyle.transform = 'translate(-50%, -50%)';
+    popoverStyle.width = 460;
+  } else {
+    var gap = 16;
+    if (cfg.placement === 'right') {
+      popoverStyle.top = Math.max(16, rect.top) + 'px';
+      popoverStyle.left = (rect.right + gap) + 'px';
+    } else if (cfg.placement === 'left') {
+      popoverStyle.top = Math.max(16, rect.top) + 'px';
+      popoverStyle.left = (rect.left - gap - 380) + 'px';
+    } else if (cfg.placement === 'bottom') {
+      popoverStyle.top = (rect.bottom + gap) + 'px';
+      popoverStyle.left = Math.max(16, Math.min(window.innerWidth - 396, rect.left)) + 'px';
+    } else if (cfg.placement === 'top') {
+      popoverStyle.top = Math.max(16, rect.top - gap - 220) + 'px';
+      popoverStyle.left = Math.max(16, Math.min(window.innerWidth - 396, rect.left)) + 'px';
+    }
+  }
+
+  var backdrop = !rect ? h('div', {
+    className: 'tour-backdrop',
+    onClick: function() { props.onClose(false); },
+  }) : null;
+
+  return h(Fragment, null,
+    backdrop,
+    spotlight && h('div', { style: spotlight }),
+    h('div', { className: 'tour-popover', style: popoverStyle },
+      h('div', { className: 'tour-progress' }, 'Step ' + (step + 1) + ' of ' + TOUR_STEPS.length),
+      h('div', { className: 'tour-title' }, cfg.title),
+      h('div', { className: 'tour-body' }, cfg.body),
+      h('div', { className: 'tour-actions' },
+        h(Button, { type: 'text', size: 'small', onClick: function() { props.onClose(false); } }, 'Skip tour'),
+        h('div', { className: 'tour-actions-right' },
+          !isFirst && h(Button, { size: 'small', onClick: function() { props.onStep(step - 1); }, style: { marginRight: 8 } }, 'Back'),
+          h(Button, { type: 'primary', size: 'small',
+            onClick: function() {
+              if (isLast) props.onClose(true);
+              else props.onStep(step + 1);
+            }
+          }, isLast ? 'Finish' : 'Next')
+        )
+      )
     )
   );
 }
